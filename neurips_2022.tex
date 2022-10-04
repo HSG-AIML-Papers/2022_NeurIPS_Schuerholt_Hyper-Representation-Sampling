@@ -1,0 +1,781 @@
+\documentclass{article}
+
+
+% if you need to pass options to natbib, use, e.g.:
+%     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2022
+
+
+% ready for submission
+% \usepackage{neurips_2022}
+
+
+% to compile a preprint version, e.g., for submission to arXiv, add add the
+% [preprint] option:
+%     \usepackage[preprint]{neurips_2022}
+
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+% \usepackage{neurips_2022}
+\usepackage[final,nonatbib]{neurips_2022}
+
+
+% to avoid loading the natbib package, add option nonatbib:
+% \usepackage[nonatbib]{neurips_2022} % preprint
+\usepackage[numbers]{natbib} % use numbers
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage[backref=page]{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+% \usepackage{graphicx}
+\usepackage{capt-of}% or \usepackage{caption}
+
+\usepackage[pdftex]{graphicx} % figures
+\usepackage{amsmath}
+
+\usepackage{geometry}
+\usepackage{wrapfig}
+\usepackage{lipsum}
+
+\usepackage{enumitem}
+\usepackage{todonotes}
+% \usepackage{cleveref}
+% \crefformat{footnote}{#2\footnotemark[#1]#3}
+
+%\usepackage[table]{xcolor}
+\usepackage{color, colortbl}
+% \definecolor{Grey}{RGB}
+
+\usepackage{arydshln} % dashed lines in tables
+\usepackage{multirow} % use multi-row tables
+\usepackage{wrapfig} % wrap text around tables
+\usepackage{tabularx} % make tables fit
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{placeins}
+
+% \title{Sampling from Hyper-Representations to \\ Generate Neural Network Weights}
+% \title{Generating Neural Network Weights using Hyper-Representations}
+% \title{Generative Hyper-Representations: Sampling Unseen Neural Network Weights}
+% \title{Generative use of Hyper-Representations: sampling NN weights}
+\title{Hyper-Representations as Generative Models: Sampling Unseen Neural Network Weights}
+
+\author{%
+    Konstantin Sch\"urholt \\
+    \texttt{konstantin.schuerholt@unisg.ch} \\
+    AIML Lab, School of Computer Science\\
+    University of St.Gallen\\
+    \And
+    Boris Knyazev \\
+    \texttt{b.knyazev@samsung.com} \\
+    Samsung - SAIT AI Lab, Montreal \\
+    %Organisation \\
+    % \And
+    \AND
+    Xavier Giró-i-Nieto \\
+    \texttt{xavier.giro@upc.edu} \\
+    Institut de Rob\`otica i Inform\`atica Industrial\\
+    % Image Processing Group \\
+    Universitat Politècnica de Catalunya \\
+    % \AND
+    \And
+    Damian Borth \\ 
+    \texttt{damian.borth@unisg.ch} \\
+    AIML Lab, School of Computer Science\\
+    University of St.Gallen\\
+}
+
+
+\begin{document}
+
+
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% ABSTRACT 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{abstract}
+    % context
+    Learning representations of neural network weights given a model zoo is an emerging and challenging area with many potential applications from model inspection, to  neural architecture search or knowledge distillation.
+    Recently, an autoencoder trained on a model zoo was able to learn a \textit{hyper-representation}, which captures intrinsic and extrinsic properties of the models in the zoo.
+    In this work, we extend hyper-representations for generative use to sample new model weights.
+    We propose layer-wise loss normalization which we demonstrate is key to generate high-performing models and several sampling methods based on the topology of hyper-representations.
+    The models generated using our methods are diverse, performant and capable to outperform strong baselines as evaluated on several downstream tasks: initialization, ensemble sampling and transfer learning. 
+    Our results indicate the potential of knowledge aggregation from model zoos to new models via hyper-representations thereby paving the avenue for novel research directions.\looseness-1
+\end{abstract}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% INTRODUCTION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+% \todo{Catch high-cost of model zoo training}
+% \todo{Cite ICML Workshop paper? Dataset Paper?}
+Over the last decade, countless neural network models have been trained and uploaded to different model hubs.
+Many factors such as random initialization and no global optimum ensure that the trained models are different from one another.
+What could we learn from such a population of neural network models?
+Since the parameter space of neural networks is complex and high-dimensional, representation learning from such populations (often referred to as model zoos) has become an emerging and challenging area.
+
+Recent work along that direction has demonstrated the ability of such learned representations to capture intrinsic and extrinsic properties of the models in a zoo~\citep{unterthinerPredictingNeuralNetwork2020,
+schurholtSelfSupervisedRepresentationLearning2021,martin2021predicting}.
+%
+According to ~\citep{schurholtSelfSupervisedRepresentationLearning2021}, NNs populate a low dimensional manifold, which can be learned with an autoencoder via self-supervised learning directly from the model paramters (weights and biases)
+% \footnote{For conciseness, we refer to all weights and biases as weights.} 
+without access to the original image data and labels. This so called \textit{hyper-representation} has been demonstrated to be useful to predict several model properties such as accuracy, hyperparameters or architecture configurations.
+
+However,  ~\citep{schurholtSelfSupervisedRepresentationLearning2021} focused on discriminative downstream tasks by exploiting the encoder only. We take one step further and extend their work towards the generative downstream tasks by sampling model weights directly from the task-agnostic hyper-representation. 
+To that end, we introduce a layer-wise normalization that improves the quality of decoded neural network weights significantly. Based on a careful analysis of the geometry, smoothness and robustness of this space, we also propose several sampling methods to generate weights in a single forward pass from the hyper-representation.
+We evaluate our approach on four image datasets and three generative downstream tasks of (i) model initialization, (ii) ensemble sampling, and (iii) transfer learning. Our results demonstrate its capability to out-perform previous hyper-representation learning and conventional baselines.\looseness-1
+
+Previous work on generating model weights proposed (Graph) HyperNetworks~\citep{haHyperNetworks2016,zhangGraphHyperNetworksNeural2019,knyazevParameterPredictionUnseen2021}, Bayesian HyperNetworks~\citep{deutschGeneratingNeuralNetworks2018}, HyperGANs~\citep{ratzlaffHyperGANGenerativeModel2019} and HyperTransformers~\citep{zhmoginovHyperTransformerModelGeneration2022} for neural architecture search, model compression, ensembling, transfer- or meta-learning.
+These methods learn representations by using images and labels of the target domain. In contrast, our approach only uses model weights and does not need access to underlying data samples and labels -- 
+an emergent use case, e.g. of deep learning monitoring services or model hubs. 
+In addition to the ability to generate novel and diverse model weights, compared to previous works our approach (a) can generate novel weights conditionally on model zoos from unseen tasks and (b) can be conditioned on the latent factors of the underlying hyper-representation. Notably, both (a) and (b) can be done without the need to retrain hyper-representations.\looseness-1
+
+The results suggest our approach (Figure \ref{fig:scheme}) to be a promising step towards a general purpose hyper-representation encapsulating knowledge of model zoos to advance different downstream tasks.
+The hyper-representations and code to reproduce our results are available at 
+\url{https://github.com/HSG-AIML/NeurIPS_2022-Generative_Hyper_Representations}.
+\looseness-1
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure*}[t]
+\begin{minipage}[t]{0.98\textwidth}
+\begin{center}
+\includegraphics[trim=0in 0in 0in 0in, clip, width=1.0\linewidth]{figures/schematic_v3.png}
+\vskip -0.1in
+\caption{\small Outline of our approach: Model zoos are trained on image classification tasks. Hyper-representations are trained with self-supervised learning on the weights of the model zoos using layer-wise loss normalization in the reconstruction loss. 
+We sample new embeddings in hyper-representation space and decode to weights. 
+Generated models perform significantly better than random initialization or models sampled from baseline hyper-representations. 
+% They are diverse and can be combined to high-performant ensembles. 
+% Sampled models achieve high performance fine-tuned in-dataset and transfer learned on new datasets.
+Sampled models achieve high performance fine-tuned and transfer learned on new datasets.\looseness-1
+}
+\vskip -0.5cm
+\label{fig:scheme}    
+\end{center}
+\end{minipage}
+\end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\vspace{-5pt}
+\section{Background: Training Hyper-Representations}
+\label{sec:training}
+\vspace{-5pt}
+
+We summarize the first stage of our method that corresponds to learning a hyper-representation of a population of neural networks, called a \textit{model zoo}~\citep{schurholtSelfSupervisedRepresentationLearning2021}. In~\citep{schurholtSelfSupervisedRepresentationLearning2021} and this paper, a model zoo consists of models trained on the same task such as CIFAR-10 image classification~\citep{krizhevskyLearningMultipleLayers2009}.
+%
+Specifically, a hyper-representation is learned using an autoencoder $\hat{\mathbf{w}}_i = h(g(\mathbf{w}_i))$ on a zoo of $M$ models $\{ {\bf w}_i\}_1^M$, 
+where ${\bf w}_i$ is the flattened vector of dimension $N$ of all the weights of the $i$-th model. 
+% architectures
+The encoder $g$ compresses vector $\mathbf{w}_i$ to fixed-size hyper-representation $\mathbf{z}_i=g(\mathbf{w}_i)$ of lower dimension. The decoder $h$ decompresses the hyper-representation to the reconstructed vector $\hat{\mathbf{w}}_i$. Both encoder and decoder are built on a self-attention block~\citep{vaswaniAttentionAllYou2017}. The samples from model zoos are understood as sequences of convolutional or fully connected neurons. Each of the neurons is encoded as a token embedding and concatenated to form a sequence. 
+% A learned compression token is appended to the sequence. 
+The sequence is passed through several layers of multi-head self-attention. Afterwards, a special compression token summarizing the entire sequence is linearly compressed to the bottleneck. The output is fed through a tanh-activation to achieve a bounded latent space $\mathbf{z}_i$ for the hyper-representation. The decoder is symmetric to the encoder, the embeddings are linearly decompressed from hyper-representations $\mathbf{z}_i$ and position encodings are added.\looseness-1
+
+% SSL Learning Task
+Training is done in a multi-objective fashion, minimizing the composite loss $\mathcal{L} = \beta \mathcal{L}_{MSE}+(1-\beta)\mathcal{L}_{c}$, where
+$\mathcal{L}_{c}$ is a contrastive loss and $\mathcal{L}_{MSE}$ is a weight reconstruction loss (see details in~\citep{schurholtSelfSupervisedRepresentationLearning2021}). We can write the latter in a layer-wise way to facilitate our discussion in \S~\ref{sec:lwln}:\looseness-1
+%
+\begin{equation}
+    \label{eq:baseline_loss}
+    \mathcal{L}_{MSE} = \frac{1}{MN}\sum\nolimits_{i=1}^M \sum\nolimits_{l=1}^L || \hat{\mathbf{w}}^{(l)}_i - {\mathbf{w}}^{(l)}_i ||^2_2,
+\end{equation}
+%
+\noindent where $\hat{\mathbf{w}}^{(l)}_i$, ${\mathbf{w}}^{(l)}_i$ are reconstructed and original weights for the $l$-{th} layer of the $i$-{th} model in the zoo. %\looseness-1
+The contrastive loss $\mathcal{L}_{c}$ leverages two types of data augmentation at train time to impose structure on the latent space: permutation exploiting inherent symmetries of the weight space and random erasing.
+
+\section{Methods}
+\label{sec:methods}
+In the following, we present (i) layer-wise loss normalization to ensure that decoded models are performant, and (ii) sampling methods to generate diverse populations of models.\looseness-1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%% normalization %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \vspace{-5pt}
+\subsection{Layer-Wise Loss Normalization}\label{sec:lwln}
+% \vspace{-3pt}
+We observed that hyper-representations as proposed by~\citep{schurholtSelfSupervisedRepresentationLearning2021} decode to dysfunctional models, with performance around random guessing. 
+To alleviate that, we propose a novel layer-wise loss normalization (LWLN), which we motivate and detail in the following.
+%
+\begin{figure}[h!]
+\begin{minipage}[t]{0.98\textwidth}
+\begin{center}
+\vspace{-4mm} 
+\includegraphics[trim=0mm 0mm 0mm 0mm, clip, width=0.9\linewidth]{figures/weight_distribution_accuracy_recon_comparison.png}
+\vspace{-6mm} 
+\caption{
+\small Comparison of the distributions of SVHN zoo weights $\mathbf{w}$ (blue) and reconstructed weights $\hat{\mathbf{w}}$ (orange) as well as their test accuracy on the SVHN test set. 
+\textbf{Top:} Baseline hyper-representation as proposed by~\citep{schurholtSelfSupervisedRepresentationLearning2021}, the weights of layers 3, 4 collapse to the mean. These layers form a weak link in reconstructed models. The accuracy of reconstructed models drops to random guessing.
+\textbf{Bottom:} Hyper-representation trained with layer-wise loss normalization (LWLN). The normalized distributions are balanced, all layers are evenly reconstructed, and the accuracy of reconstructed models is significantly improved.
+}
+\vspace{-3mm} 
+\label{fig:layer_norm_eval}    
+\end{center}
+\end{minipage}
+\end{figure}
+
+Due to the MSE training loss in~\eqref{eq:baseline_loss}, the reconstruction error can generally be expected to be uniformly distributed over all weights and layers of the weight vector $\mathbf{w}$.
+However, the weight magnitudes of many of our zoos are unevenly distributed across different layers. 
+% In these zoos, the reconstruction error $R^2$ using baseline hyper-representations is likewise unevenly distributed. 
+In these zoos, the even distribution of reconstruction errors lead to undesired effects.
+Layers with broader distributions and large-magnitude weights are reconstructed well, while layers with narrow distributions and small-magnitude weights are disregarded. The latter layers can become a weak link in the reconstructed models, causing performance to drop significantly down to random guessing. 
+The top row of Figure \ref{fig:layer_norm_eval} shows an example of a baseline hyper-representation learned on the zoo of SVHN models~\citep{netzerReadingDigitsNatural2011}.
+Common initialization schemes~\citep{heDelvingDeepRectifiers2015,glorotUnderstandingDifﬁcultyTraining2010} produce distributions with different scaling factors per layer, so the issue is not an artifact of the zoos, but can exist in real world model populations. Similarly, recent work on generating models normalizes weights to boost performance~\citep{knyazevParameterPredictionUnseen2021}.
+In order to achieve equally accurate reconstruction across the layers, we introduce a layer-wise loss normalization (LWLN) with the mean $\mu_l$ and standard deviation $\sigma_l$ of all weights in layer $l$ estimated over the train split of the zoo:\looseness-1
+\begin{equation}
+    \label{eq:lwln_loss}
+    \mathcal{L}_{\bar{MSE}} = \frac{1}{MN} \sum_{i=1}^{M} \sum_{l=1}^{L} \left\| \frac{\hat{\mathbf{w}}_i^{(l)}-\mu_l}{\sigma_l}-\frac{\mathbf{w}_i^{(l)}-\mu_l}{\sigma_l} \right\|_2^2 = \frac{1}{MN}\sum_{i=1}^M \sum_{l =1}^{L}\frac{\|\hat{\mathbf{w}}_i^{(l)}-\mathbf{w}_i^{(l)} \|_2^2}{\sigma_l^2}. 
+\end{equation}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Sampling Hyper-Representations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Sampling from Hyper-Representations}
+\label{sec:sampling}
+We introduce methods to draw diverse and high-quality samples $\mathbf{z}^* \sim p(\mathbf{z})$ from the learned hyper-representation space to generate model weights $\mathbf{w}^* = h(\mathbf{z}^*)$. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Sampling Approach %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Such sampling is facilitated if there is knowledge on the topology of the space spanned by $\mathbf{z}$. One way to achieve that is to train a variational autoencoder (VAE) with a predefined prior~\citep{kingmaAutoEncodingVariationalBayes2013} instead of the autoencoder of ~\citep{schurholtSelfSupervisedRepresentationLearning2021}. 
+While training VAEs on common domains such as images has become well-understood and feasible, in our relatively novel weight domain, we found it problematic (see details in Appendix \ref{app:sampling}).
+Other generative methods avoid a predefined prior of VAEs, either by analyzing the topology of the space learned by the autoencoder or fitting a separate density estimation model on top of the learned representation~\citep{liu2019acceleration,guo2019auto}. These methods assume the representation space to have strong regularities.
+The hyper-representation space learned by the autoencoder of~\citep{schurholtSelfSupervisedRepresentationLearning2021} is already regularized by dropout regularization applied to the encoder and decoder as in~\citep{ghoshVariationalDeterministicAutoencoders2020}. The contrastive loss component requiring similar models to be embedded close to each other may also improve the regularity of the representation space.
+Empirically, we found our layer-wise loss normalization (LWLN) to further regularize the representation space by ensuring robustness and smoothness (see Figure \ref{fig:rob_smooth} in \S~\ref{sec:experiments}). 
+
+%
+Given the smoothness and robustness of the learned hyper-representation space, we follow ~\citep{liu2019acceleration,guo2019auto,ghoshVariationalDeterministicAutoencoders2020} in estimating the density and topology to draw samples from a regularized autoencoder. To that end, we introduce three strategies to sample from that space: $S_{\text{KDE}}, S_{\text{Neigh}}, S_{\text{GAN}}$.
+To model the density and topology in representation space, we use the embeddings of the train set as anchor samples $\{\mathbf{z}_i\}$. 
+We observe that many anchor samples from $\{\mathbf{z}_i\}$ correspond to the models with relatively poor accuracy (Figure \ref{fig:layer_norm_eval}), so to improve the quality of sampled weights, we consider the variants of these methods using only those embeddings of training samples corresponding to the top 30\% performing models. We denote these sampling methods as $S_{\text{KDE30}}, S_{\text{Neigh30}}, S_{\text{GAN30}}$ respectively.
+These methods can potentially decrease sample diversity, however, we found that the generated weights are still diverse enough (e.g. to construct high-performant ensembles, Figure~\ref{fig:ensembles}).
+Finally, as baseline and sanity check we explore sampling uniformly in representation space $S_U$ and sampling in low-probability regions $S_C$.\looseness-1
+
+\vspace{-3pt}
+\subsubsection{Uniform $S_U$}
+\vspace{-3pt}
+%
+%
+%%%% Sampling Strategies %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+As a naive baseline, we draw samples uniformly in hyper-representation space (bounded by tanh, \S~\ref{sec:training}) and denote it as $S_U$. This is naive, because we found that the embeddings $\mathbf{z}$ populate only sections of a shell of a high-dimensional sphere (see Figures~\ref{fig:hyper_sphere_z} and \ref{fig:hyper_sphere_cos} in Appendix \ref{app:analysis}). So most of the uniform samples lie in the low-probability regions of the space and are not expected to be decoded to useful models.\looseness-1
+
+%
+%%%% Sampling Methods %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace{-3pt}
+\subsubsection{Density estimation $S_{\text{KDE}}$ and counterfactual sampling $S_C$}
+\vspace{-3pt}
+The dimensionality $D$ of hyper-representations $\mathbf{z}$ in~\citep{schurholtSelfSupervisedRepresentationLearning2021}, as well as in our work, is relatively high due to the challenge of compressing weights $\mathbf{w}$. 
+Fitting a probability density model to such a high-dimensional distribution is feasible by making a conditional independence assumption: $p(\mathbf{z}^{(j)}|\mathbf{z}^{(k)}, \mathbf{w}) = p(\mathbf{z}^{(j)}| \mathbf{w})$, where $\mathbf{z}^{(j)}$ is the $j$-th dimensionality of the embedding $\mathbf{z}$.
+To model the distribution of each $j$-th dimensionality, we choose kernel density estimation (KDE), as it is a powerful yet simple, non-parametric and deterministic method with a single hyperparameter.
+%
+We fit a KDE to the $M$ anchor samples $\{\mathbf{z}_{i}^{(j)}\}_{i=1}^M$ of each dimension $j$, and draw samples $z^{(j)}$ from that distribution: $ z^{(j)} \sim p(\mathbf{z}^{(j)}) = \frac{1}{M h} \sum\nolimits_{i=1}^{M} K(\frac{\mathbf{z}^{(j)} - \mathbf{z}^{(j)}_i}{h})
+$,
+\noindent where $K(x)=(2\pi)^{-1/2} \exp{(-\frac{x^2}{2})}  $
+is the Gaussian kernel and $h$ is a bandwidth hyperparameter.
+The samples of each dimension $z^{(j)}$ are concatenated to form samples $\mathbf{z}^* = [z^{(1)}, z^{(2)}, \cdots, z^{(D)}]$. This method is denoted as $S_{\text{KDE}}$.
+
+As a sanity check, we invert the $S_{\text{KDE}}$ method and explicitly draw samples from regions not populated by anchor samples, i.e. with low probability according to the KDE. This method, denoted as $S_C$, essentially samples counterfactual embeddings and similarly to $S_U$ is expected to perform poorly.\looseness-1
+%
+\vspace{-3pt}
+\subsubsection{Neighbor sampling $S_{\text{Neigh}}$}
+% \todo{fix inverse, input feedback / response for reviewer cFnj}
+\vspace{-3pt}
+
+%The neighborhood topology of hyper-representations appears to encode model properties.
+Sampling neighbors of anchor samples $\{\mathbf{z}_i\}$ could be a simple and effective sampling strategy, but due to high sparsity of the hyper-representation space this strategy results in poor-quality samples. We therefore propose to use a neighborhood-based dimensionality reduction function $k: \mathbb{R}^D \to \mathbb{R}^{d}$ that maps $\mathbf{z}_i$ to low-dimensional embeddings $\mathbf{n}_i \in \mathbb{R}^{d}$ where sampling is facilitated. %$\mathbf{n}_i = k(\mathbf{z}_i)$. 
+The assumption is that due to the low dimensionality of $\mathbb{R}^{d}$ (we choose $d=3$) there will be fewer low-probability regions, so that uniform sampling in $\mathbb{R}^{d}$ can be effective.
+%Therefore, this method maps the neighborhood topology in a lower dimensional space to facilitate sampling. 
+Specifically, given low-dimensional embeddings $\mathbf{n}_i = k(\mathbf{z}_i)$, we sample $\mathbf{n}^*$ uniformly from the cube: $\mathbf{n}^* \sim U({min(\mathbf{n}),max(\mathbf{n})})$.
+Samples $\mathbf{n}^*$ are then mapped back to hyper-representations $ \mathbf{z}^* = k^{-1}(\mathbf{n}^*)$. 
+To preserve the neighborhood topology of $\mathbb{R}^D$ in $\mathbb{R}^d$ and enable mapping back to $\mathbb{R}^D$, we choose $k$ to be an approximate inverse neighborhood-based dimensionality reduction function based on UMAP~\citep{mcinnesUMAPUniformManifold2018a}.\looseness-1
+%Specifically, we approximate the neighborhood topology of the anchor samples $\{\mathbf{z}_i\}$ using an approximate inverse function $k: \mathbb{R}^D \to \mathbb{R}^{d}$ with $\mathbf{n}_i = k(\mathbf{z}_i)$, which approximately preserves neighborhood and topology of $\{\mathbf{z}_i\}$ in $\mathbb{R}^d$.
+%We choose $d=3$ to make $\mathbb{R}^{d}$ a sufficiently low dimensional space to sample from.
+%Samples $\mathbf{n}^*$ are uniformly drawn from the box surrounding the $d$-dimensional reduction $\mathbf{n}^* \sim U({min(\mathbf{n}),max(\mathbf{n})})$ and mapped back to hyper-representations $ \mathbf{z}^* = k^{-1}(\mathbf{n}^*)$. 
+%For $k$, we use a neighborhood-based dimensionality reduction method UMAP~\citep{mcinnesUMAPUniformManifold2018a}.
+\\
+%
+\vspace{-10pt}
+\subsubsection{Latent space GAN $S_{\text{GAN}}$}\label{sec:gan}
+\vspace{-3pt}
+
+A common choice for generative representation learning is generative adversarial networks (GANs)~\citep{goodfellowGenerativeAdversarialNets2014}. While training a GAN directly to generate weights is a promising yet challenging avenue for future research~\citep{ratzlaffHyperGANGenerativeModel2019}, we found the GAN framework to work reasonably well when trained on the hyper-representations. This idea follows \citep{liu2019acceleration,guo2019auto} that showed improved training stability and efficiency compared to training GANs on inputs directly.
+We train a generator $G: \mathbb{R}^d \to \mathbb{R}^D$ with $\mathbf{z}^* = G(\mathbf{n}^*)$ to generate samples in hyper-representation space from the Gaussian noise $\mathbf{n}^*$.  We choose $d=16$ as a compromise between size and capacity.
+See a detailed architecture of our GAN in Appendix~\ref{app:sampling}.\looseness-1
+%
+
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% EXPERIMENTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \vspace{-0.25cm}
+\section{Experiments}
+\label{sec:experiments}
+%
+% \vspace{-0.25cm}
+\vspace{-0.15cm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% EXPERIMENTAL SETUP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Experimental Setup}
+
+We train and evaluate our approaches on four image classification datasets: MNIST~\citep{lecunGradientbasedLearningApplied1998}, SVHN~\citep{netzerReadingDigitsNatural2011}, 
+CIFAR-10~\citep{krizhevskyLearningMultipleLayers2009}, STL-10~\citep{coatesAnalysisSingleLayerNetworks2011}. For each dataset, there is a model zoo that we use to train an autoencoder following~\citep{schurholtSelfSupervisedRepresentationLearning2021}.\looseness-1
+
+\textbf{Model zoos:} 
+% \todo{Revise: Catch high-cost of model zoo training}
+% why generate own zoos
+In practice, there are already many available model zoos, e.g., on Hugging Face or GitHub, that can be used for hyper-representation learning and sampling. 
+Unfortunately, these zoos are not systematically constructed and require further effort to mine and evaluate.
+Therefore, in order to control the experiment design, ensure feasibility and reproducibility, we generate novel or use the model zoos of~\citep{schurholtSelfSupervisedRepresentationLearning2021,schurholtModelZoosDataset2022} created in a systematic way.
+With controlled experiments, we aim to develop and evaluate inductive biases and methods to train and utilize hyper-representation, which can be scaled up efficiently to large-scale and non-systematically constructed zoos later. %\looseness-1
+%\\
+For each image dataset, a zoo contains $M=1000$ convolutional networks of the same architecture with three convolutional layers and two fully-connected layers. 
+Varying only in the random seeds, all models of the zoo are trained for 50 epochs with the same hyperparameters following~\citep{schurholtSelfSupervisedRepresentationLearning2021}. 
+To integrate higher diversity in the zoo, initial weights are uniformly sampled from a wider range of values rather than using well-tuned initializations of~\citep{glorotUnderstandingDifﬁcultyTraining2010,heDelvingDeepRectifiers2015}.
+Each zoo is split in the train (70\%), validation (15\%) and test (15\%) splits. 
+To incorporate the learning dynamics, we train autoencoders on the models trained for
+21-25 epochs following~\citep{schurholtSelfSupervisedRepresentationLearning2021}. Here the models have already achieved high performance, but have not fully converged. The development in the remaining epochs of each model are treated as hold-out data to compare against. 
+We use the MNIST and SVHN zoos from~\citep{schurholtSelfSupervisedRepresentationLearning2021} and based on them create the CIFAR-10 and STL-10 zoos. Details on the zoos can be found in Appendix~\ref{app:zoos}.\looseness-1
+
+\textbf{Experimental details:} We train separate hyper-representations on each of the model zoos. Images and labels are not used to train the hyper-representations (see \S~\ref{sec:training}).
+Using the proposed sampling methods (\S~\ref{sec:sampling}), we generate new embeddings and decode them to weights. We evaluate sampled populations as initializations (epoch 0) and by fine-tuning for up to 25 epochs.
+We distinguish between in-dataset and transfer-learning. 
+% in distro
+For in-dataset, the same image dataset is used for training and evaluating our hyper-representations and baselines.
+%out-of-distro
+For transfer-learning, hyper-representations (and pre-trained models in baselines) are trained on a source dataset, then all populations are evaluated and fine-tuned on a different target dataset. 
+Full details on training, including infrastructure and compute is detailed in the Appendix  \ref{app:training}.\looseness-1
+%
+%%% Domains %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+
+
+%
+\textbf{Baselines:}
+As the first baseline, we consider the autoencoder of~\citep{schurholtSelfSupervisedRepresentationLearning2021}, which is same as ours but without the proposed layer-wise loss-normalization (LWLN, \S~\ref{sec:lwln}). We combine this autoencoder with the $S_\text{KDE30}$ sampling method and, hence, denote it as $B_{\text{KDE}30}$.
+We consider two other baselines based on training models with stochastic gradient descent (SGD): training from scratch on the target classification task $B_T$, and training on a source followed by fine-tuning on the target task $B_F$. The latter remains one of the strongest transfer learning baselines~\citep{chen2019closer,dhillon2019baseline,kolesnikov2020big}.
+%
+%%%% Reproducibility, Reliability and Comparability %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textbf{Reproducibility, reliability and comparability:}
+We compare populations of at least 50 models to evaluate each method reliably.
+We report standard deviation in Tables~\ref{tab:initialization}-\ref{tab:transfer} and statistical significance, effect size and 95\% confidence interval in Appendix \ref{app:results}. 
+To ensure fairness and comparability, all methods share training hyperparameters. 
+Fine-tuning uses the hyperparameters of the target domain. 
+
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% RESULTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Results}
+\label{sec:results}
+In the following, we first analyze the learned hyper-representations further justifying our sampling methods and assumptions made in \S~\ref{sec:sampling}. %We then confirm the effectiveness of the proposed layer-wise loss normalization.
+We then confirm the effectiveness of our approach for model initialization without and with fine-tuning in the in-dataset and transfer learning settings.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Analysis of Hyper-Representations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Hyper-Representations are Robust and Smooth}
+\label{sec:analysis}
+
+\begin{figure}[htpb]
+\begin{center}
+\begin{tabular}{cccc}
+     \multicolumn{2}{c}{Baseline hyper-representation} & \multicolumn{2}{c}{Our hyper-representation} \\
+     \multicolumn{2}{c}{\includegraphics[trim=0in 0in 0in 3mm, clip, width=0.48\linewidth]{figures/rob_smooth_vanilla.png}} 
+     & 
+     \multicolumn{2}{c}{\includegraphics[trim=0in 0in 0in 3mm, clip, width=0.48\linewidth]{figures/rob_smooth.png}}  \\
+     \multicolumn{1}{c}{\hspace{50pt}(a)} & \multicolumn{1}{c}{\hspace{50pt}(b)} & \multicolumn{1}{c}{\hspace{50pt}(c)} & \multicolumn{1}{c}{\hspace{50pt}(d)} \\
+\end{tabular}
+
+\end{center}
+\vspace{-4mm}
+\small
+\captionof{figure}{
+\textbf{(a,c):} Robustness of hyper-representations.
+For both baseline and our hyper-representation, relatively large levels of relative noise >10\% are necessary to degrade the test accuracy ({\color{orange}orange}) or reconstruction ({\color{cyan}blue}); see the text for further discussion.
+\textbf{(b,d):} 
+%Smoothness of hyper-representations.
+Interpolations along model trajectories ({\color{orange}orange}) and %translate in smooth development of accuracy.
+between $\mathbf{z}$ of different models ({\color{cyan}blue}) show the smoothness of our hyper-representation.% translate to a inverted gaussian shape. 
+}
+\vspace{-1mm}
+\label{fig:rob_smooth}    
+\end{figure}
+
+We evaluate the robustness and smoothness of the hyper-representation space with two experiments on the SVHN zoo. First, to evaluate robustness, we add different levels of noise to the embeddings of the test set to create $\tilde{\mathbf{z}}$, decode them to model weights $\tilde{\mathbf{w}}$ and compute models' accuracies on the SVHN classification task. 
+We found that both the baseline as well as our hyper-representations are robust to noise as large levels of relative noise >10\% are required to affect performance (Figure \ref{fig:rob_smooth}, a,c). 
+% smoothness
+Second, to probe for smoothness, we linearly interpolate between the test set embeddings (i) along the trajectory of the same model at different epochs ($\mathbf{z}_{i, ep5}$ and $\mathbf{z}_{i, ep25}$) and (ii) between 250 random pairs of embeddings on the trajectories of different models ($\mathbf{z}_{i}$ and $\mathbf{z}_{j}$).
+We decode the interpolated embeddings and compute models' accuracies on the classification task. 
+For our model, we found remarkably smooth development of accuracy along the interpolation in both schemes (Figure \ref{fig:rob_smooth}, d). The lack of fluctuations along and between trajectories support both local and global notions of smoothness in hyper-representation space.
+
+
+For the baseline autoencoder (without LWLN) decoded models all perform close to 10\% accuracy, so these representations do not support similar notions of smoothness (Figure \ref{fig:rob_smooth}, b), while robustness can be misleading, since the accuracy even without adding noise is already low (Figure \ref{fig:rob_smooth}, a).
+Therefore, LWLN together with regularizations added to the autoencoder allow for learning robust and smooth hyper-representation. This property makes sampling from that representation more meaningful as we show next.\looseness-1
+
+
+\vspace{8pt}
+% table results
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Sampling for In-dataset Initialization}
+%
+\begin{wrapfigure}{r}{0.58\linewidth}
+\vspace{-5mm}
+\includegraphics[trim=2mm 2mm 2mm 2mm, clip, width=1.0\linewidth]{figures/accuracy_distributions_samples_boxplot.png}
+\vspace{-6mm}
+\captionof{figure}{
+MNIST results of sampled weights (no fine-tuning) compared to training from scratch with SGD ($B_T$).\looseness-1
+}
+\vspace{-2mm}
+\label{fig:accuracy_distributions}    
+\end{wrapfigure} 
+\textbf{Comparison between sampling methods:} 
+We evaluate the performance of different sampled populations (obtained with LWLN) \textit{without fine-tuning} generated weights.
+On MNIST, all sampled models except those obtained using $S_U$ and $S_C$ perform better than random initialization (10\% accuracy), but worse than models trained from scratch $B_T$ for 25 epochs (Figure \ref{fig:accuracy_distributions}). 
+Distribution-based samples ($S_{\text{KDE}}$ and $S_{\text{GAN}}$) perform better than neighborhood based samples ($S_{\text{Neigh}}$).
+The populations based on the top 30\% perform better than their 100\% counterparts with $S_{\text{KDE30}}$ as the strongest sampling method overall. This demonstrates that the learned hyper-representation and sampling methods are able to capture complex subtleties in weight space differentiating high and low performing models.\looseness-1
+
+
+\vspace{8pt}
+
+\textbf{Comparison to the baseline hyper-representations:}  We also compare $S_{\text{KDE30}}$ that is based on our autoencoder with layer-wise loss normalization (LWLN) to the baseline autoencoder using the same sampling method ($B_{\text{KDE}30}$) without fine-tuning. 
+On all datasets except for MNIST, $S_{\text{KDE30}}$ considerably outperform $B_{\text{KDE}30}$ with the latter performing just above 10\% (random guessing), see Table~\ref{tab:initialization} (rows with epoch 0).
+We attribute the success of LWLN to two main factors.
+First, LWLN prevents the collapse of reconstruction to the mean (compare Figure \ref{fig:layer_norm_eval} top to bottom). Second, by fixing the weak links, the reconstructed models perform significantly better (see Appendix \ref{app:loss} for more results).\looseness-1
+
+%We also evaluated input-to-output feature normalization, s.t. encoder and decoder operate on normalized weights, but empirically found it did not work as well as a normalization just for the loss.
+%More details are provided in Appendix \ref{app:loss}.\looseness-1
+\vspace{8pt}
+
+\textbf{In-dataset fine-tuning:} 
+When fine-tuning, our $S_{\text{KDE}30}$ and baseline $B_{\text{KDE}30}$ appear to gradually converge to similar performance (Table \ref{tab:initialization}). While unfortunate, this result aligns well with previous findings that longer training and enough data make initialization less important~\citep{mishkinAllYouNeed2016,he2019rethinking,rasmus2015semi}.
+\begin{wraptable}{r}{0.55\linewidth}
+\vspace{-2mm}
+\captionof{table}{
+Mean and std of test accuracy (\%) of sampled populations with LWLN ($S_{\text{KDE}30}$) and without ($B_{\text{KDE}30}$) compared to models trained from scratch $B_T$. Best results for each epoch and dataset are bolded.
+}\label{tab:initialization}
+\vspace{2mm}
+\scriptsize
+\setlength{\tabcolsep}{6pt}
+\begin{tabularx}{\linewidth}{rccccc}
+\toprule
+\multicolumn{1}{r}{\textbf{Method}} & \textbf{Ep.} & \multicolumn{1}{c}{\textbf{MNIST}} & \multicolumn{1}{c}{\textbf{SVHN}} &
+\multicolumn{1}{c}{\textbf{CIFAR-10}} & \multicolumn{1}{c}{\textbf{STL-10}} \\
+\midrule
+$B_{T}$                & 0 &  \multicolumn{4}{c}{$\approx$10\% (random guessing)}\\
+$B_{\text{KDE}30}$   & 0     & {63.2 ± 7.2}   & 10.1 ± 3.2           & 
+15.5 ± 3.4           & 12.7 ± 3.4  \\
+$S_{\text{KDE}30}$   & 0     & \textbf{68.6 ± 6.7}   & \textbf{51.5 ± 5.9}  & 
+\textbf{26.9 ± 4.9}  & \textbf{19.7 ± 2.1}  \\
+\midrule
+$B_{T}$                & 1      & 20.6 ± 1.6           & 19.4 ± 0.6           & 
+27.5 ± 2.1           & 15.4 ± 1.8  \\
+$B_{\text{KDE}30}$   & 1     & {83.2 ± 1.2}   & 67.4 ± 2.0 	        & 
+39.7 ± 0.6           &	\textbf{26.4 ± 1.6} \\
+$S_{\text{KDE}30}$   & 1     & \textbf{83.7 ± 1.3}   & \textbf{69.9 ± 1.6}  &
+\textbf{44.0 ± 0.5}  &	{25.9 ± 1.6}  \\
+\midrule
+$B_{T}$                & 25     & 83.3 ± 2.6           & 66.7 ± 8.5           & 
+46.1 ± 1.3           & 35.0 ± 1.3  \\
+$B_{\text{KDE}30}$   & 25    & \textbf{93.2 ± 0.6}   & \textbf{75.4 ± 0.9}  & 
+{48.1 ± 0.6}  & \textbf{38.4 ± 0.9}  \\
+$S_{\text{KDE}30}$   & 25    & {93.0 ± 0.7}    & {74.2 ± 1.4} &
+\textbf{48.6 ± 0.5}  & {38.1 ± 1.1}  \\
+\midrule
+$B_{T}$                & 50     & 91.1 ± 2.6           & 70.7 ± 8.8           & 
+48.7 ± 1.4           & 39.0 ± 1.0  \\
+
+\bottomrule 
+\end{tabularx}
+\vspace{-4mm}
+\end{wraptable} 
+We also compare $S_{\text{KDE}30}$ and $B_{\text{KDE}30}$ to training models from scratch ($B_T$).
+On all four datasets, both ours and the baseline hyper-representations outperform $B_T$ when generated weights are fine-tuned for the same number of epochs as $B_T$.
+Notably, on MNIST and SVHN generated weights fine-tuned for 25 epochs are even better than $B_T$ run for 50 epochs. Comparison to 50 epochs is more fair though, since the hyper-representations were trained on model weights trained for up to 25 epochs.
+% Interpretation
+These findings show that the models initialized with generated weights learn faster achieving better results in 25 epochs than $B_T$ in 50 epochs.
+
+\vspace{12pt}
+
+\begin{wrapfigure}{r}{0.30\linewidth}
+\vspace{-2mm}
+\centering
+\includegraphics[trim=4mm 4.5mm 3.5mm 3.8mm, clip, width=1.0\linewidth]{figures/ensemble_sampling_comparison.png}
+\vspace{-6mm}
+\captionof{figure}{
+Generated ensembles evaluated on SVHN. 
+Test accuracy is averaged over 15 ensembles of randomly chosen models.
+}
+\vspace{-4mm}
+\label{fig:ensembles}    
+\end{wrapfigure}
+\textbf{Sampling ensembles:} We found that a potentially useful by-product of learning hyper-representations is the ability to generate high-performant ensembles at almost no extra computational cost, since both sampling and generation are computationally cheap. 
+To demonstrate this effect, we compare ensembles formed using the baseline autoencoder ($B_{\text{KDE}30}$) and ours ($S_{\text{KDE}30}$) to the ensembles composed of models trained from scratch for 25 epochs ($B_T$) on SVHN.
+Ensembles generated using the baseline $B_{\text{KDE}30}$ stagnate below 20\% (Figure \ref{fig:ensembles}).
+In contrast, ensembles generated using our $S_{\text{KDE}30}$ gracefully improve with the ensemble size outperforming single $B_T$ models and almost matching $B_T$ ensembles with enough models in the ensembles.
+Remarkably, the average test accuracy of generated ensembles of 15 models is 77.6\%, which is considerably higher than 70.7\% of models trained on SVHN for 50 epochs.
+We conclude that hyper-representations learned with LWLN generate models that are not only performant, but also diverse.
+Although generating ensembles requires learning hyper-representation and model zoo first, we assume that in future such a hyper-representation can be trained once and reused in unseen scenarios as we tentatively explore below (see results in Table~\ref{tab:cross_ds_recon} and the discussion therein).\looseness-1
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \newpage
+\begin{wrapfigure}{r}{0.6\linewidth}
+\vspace{-4mm}
+\includegraphics[trim=4mm 2mm 3.8mm 3.8mm, clip, width=1.0\linewidth]{figures/recon_finetuning_distance_epochs.png}
+% \vskip -0.1in
+\vspace{-7mm}
+\captionof{figure}{
+Progression of test accuracy (left) and distance (right) between weights during fine-tuning on SVHN; \\ $\mathbf{w}$ -- initialization with the weights trained using SGD for 25 epochs; $\hat{\mathbf{w}}$ -- initialization with reconstructed weights.}
+\vspace{-2mm}
+\label{fig:new_weight_solutions}    
+\end{wrapfigure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{Do reconstructed models become similar to the original during fine-tuning?}
+% why do we ask this question
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Sampled hyper-representations often learn faster and to a higher performance than the population of models they were trained on (Table~\ref{tab:initialization}).
+We therefore explore the question, if reconstructed models develop in weight space in the same direction as their original, or find a different solution.
+On SVHN, we found that the reconstructed models ($\hat{\mathbf{w}}$) after one epoch of fine-tuning perform similar to their originals ($\mathbf{w}$) and slightly outperform from there on (Figure \ref{fig:new_weight_solutions}, left).
+At the same time, pairs of original and reconstructed models move further apart and become less aligned in weight space (Figure \ref{fig:new_weight_solutions}, right).
+It appears that reconstructed models perform better and explore different solutions in weight space to do so. 
+% interpretation
+This confirms the intuition that hyper-representations impress useful structure on decoded weights. 
+A pass through encoder and decoder thus results not just in a noisy reconstruction of the original sample. 
+Instead, it maps to a different region on the loss surface, which leads to faster learning and better solutions.
+Combining this with the ensembling results in Figure~\ref{fig:ensembles}, hyper-representations do not collapse to a single solution, but decode to diverse and useful weights.\looseness-1
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Sampling Initializations for Transfer Learning}
+% \subsubsection{Sampling for Cross-dataset Initialization}
+\label{sec:cross_dataset}
+%
+\textbf{Setup:}
+We investigate the effectiveness of our method in a transfer-learning setup across image datasets. In particular, we report transfer learning results from SVHN to MNIST and from STL-10 to CIFAR-10 as two representative scenarios. Results on the other pairs of datasets can be found in Appendix \ref{app:results}. 
+In these experiments, pre-trained models $B_F$ and the hyper-representation model are trained on a source domain. Subsequently, the pre-trained models $B_F$ and the samples $S_{\text{KDE}}$, $S_{\text{Neigh}}$ and $S_{\text{GAN}}$ are fine-tuned on the target domain. The baseline approach ($B_T$) is based on training models from scratch on the target domain. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[ht!]
+\centering
+\caption{Transfer-learning results (mean and standard deviation of the test accuracy in \%). Note that for STL-10 to CIFAR-10 the performance of all methods saturate quickly due to the limited capacity of models in the zoo making further improvements challenging as we discuss in \S~\ref{sec:limitations}.
+}
+\label{tab:transfer}
+{\small
+\setlength{\tabcolsep}{10pt}
+\centering
+\begin{tabular}{lcccccc}
+\toprule
+
+\textbf{Method} & \multicolumn{3}{c}{\textbf{SVHN to MNIST}} & \multicolumn{3}{c}{\textbf{STL-10 to CIFAR-10}} \\
+\cmidrule(r){1-1} \cmidrule(rl){2-4} \cmidrule(l){5-7} 
+                  & \textbf{Ep. 0}          & \textbf{Ep. 1}        & \textbf{Ep. 50}       & \textbf{Ep. 0}        & \textbf{Ep. 1} & \textbf{Ep. 50}        \\
+\cmidrule(r){1-1} \cmidrule(rl){2-2} \cmidrule(rl){3-3} \cmidrule(rl){4-4} \cmidrule(rl){5-5} \cmidrule(rl){6-6} \cmidrule(rl){7-7} 
+$B_T$  & 10.0 ± 0.6         & 20.6 ± 1.6 & 91.1 ± 1.0         & 10.1 ± 1.3  & 27.5 ± 2.1 & {48.7 ± 1.4} \\ 
+$B_F$    & \textbf{33.4 ± 5.4} & 84.4 ± 7.4 & 95.0 ± 0.8 & \textbf{15.3 ± 2.3} & {29.4 ± 1.9} & \textbf{49.2 ± 0.7} \\
+
+\cmidrule(r){1-1} \cmidrule(rl){2-2} \cmidrule(rl){3-3} \cmidrule(rl){4-4} \cmidrule(rl){5-5} \cmidrule(rl){6-6} \cmidrule(rl){7-7} 
+$S_{\text{KDE}30}$   & 31.8 ± 5.6          & \textbf{86.9 ± 1.4} & \textbf{95.5 ± 0.4} & {14.5 ± 1.9} & \textbf{29.6 ± 2.0} & {48.8 ± 0.9} \\
+$S_{\text{Neigh}30}$ & 10.7 ± 2.7          & 79.2 ± 3.3  & \textbf{95.5 ± 0.7}          & 10.1 ± 2.1          & {29.2 ± 1.9} & {48.9 ± 0.7}  \\
+$S_{\text{GAN}30}$   & 10.4 ± 2.4          & 75.0 ± 6.3 & 94.9 ± 0.7          & 10.2 ± 2.5          & {28.6 ± 1.8} & {48.8 ± 0.8} \\
+\bottomrule
+
+\end{tabular}
+}
+\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% list and explain results
+\textbf{Results:}
+When transfer learning is performed from SVHN to MNIST, the sampled populations on average learn faster and achieve significantly higher performance than the $B_T$ baseline and generally compares favorably to $B_F$ (Figure~\ref{fig:sampling_accuracy_ood}, Table~\ref{tab:transfer}). 
+In the STL-10 to CIFAR-10 experiment, all populations appear to saturate with only small differences in their performances (Table \ref{tab:transfer}).
+Different sampling methods perform differently at the beginning versus the end of transfer learning. Generally, $S_{\text{KDE30}}$ performs better in the first epochs, while all methods perform comparably at the end of transfer-learning. 
+These discrepancies underline the difficulty of developing a single strong sampling method, which is an interesting area of future research.
+We further found that all datasets are useful sources for all targets (see Appendix \ref{app:results}). Interestingly and other than in related work~\citep{mensinkFactorsInfluenceTransfer2021}, even transfer from the simpler to harder datasets (e.g., MNIST to SVHN) improves performance.
+This might be explained by the ability of hyper-representations to capture a generic inductive prior useful across different domains, which we further investigate next.
+
+
+
+\begin{wraptable}{r}{0.5\linewidth}
+\vspace{-6mm}
+\captionof{table}{
+Test accuracy (\%) of models generated conditioned on the models of unseen zoos.}
+\label{tab:cross_ds_recon}
+\vspace{2mm}
+\small
+\setlength{\tabcolsep}{2pt}
+\begin{tabularx}{\linewidth}{p{1.5cm}p{1.5cm}cc}
+\toprule
+\textbf{\scriptsize Training} & \textbf{\scriptsize Conditioning} & \multicolumn{2}{c}{\textbf{\scriptsize Mean / max (bolded) accuracy}}  \\
+\textbf{\scriptsize zoo} & \textbf{\scriptsize(unseen)} & \textbf{\scriptsize One model} & \textbf{\scriptsize Ensemble} \\
+\midrule
+MNIST & SVHN & 12.7 / \textbf{19.8} & 13.4 / \textbf{18.7} \\
+SVHN & MNIST & 16.2 / \textbf{26.0} & 22.1 / \textbf{29.8} \\
+CIFAR-10 & STL-10 & 18.0 /  \textbf{24.4} & 23.8 / \textbf{26.7} \\
+STL-10 & CIFAR-10 & 16.3 / \textbf{21.2} & 20.0 / \textbf{23.0} \\
+\bottomrule
+\end{tabularx}
+\vspace{-2mm}
+\end{wraptable} 
+
+\paragraph{Conditioning on unseen zoos:}
+We explore if the hyper-representation trained on the models of one zoo (e.g. MNIST) can reconstruct the weights of another unseen zoo (e.g. SVHN).
+This can be useful to enable generation of weights for novel tasks without the need to retrain a hyper-representation. This is analogous to instance-conditioned GANs that recently were able to generate images from unseen domains without retraining GANs~\citep{casanova2021instance}.
+Our results in Table \ref{tab:cross_ds_recon} show that while the performance on the unseen zoos is reduced, it is still well above random guessing (10\%), especially when multiple model weights are sampled and ensembled. This is promising, as the hyper-representations were trained on single-dataset zoos. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% figure
+\begin{figure}%[h!]
+\begin{minipage}{0.98\textwidth}
+\begin{center}
+\includegraphics[trim=0in 0in 0in 0in, clip, width=0.9\linewidth]{figures/accuracy_ood_line_box_svhn.png}
+\vspace{-4mm}
+\caption{SVHN to MNIST transfer learning experiment: test accuracy over epochs. Our sampling methods outperform the baselines after the first epoch. \textbf{Left:} epochs from 0 to 50. \textbf{Right}: epochs from 3 to 9, where $B_T$ is significantly lower than 80\% and thus is not visible.\looseness-1}
+\vspace{-4mm}
+
+\label{fig:sampling_accuracy_ood}    
+\end{center}
+\end{minipage}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsubsection{Sampling for Cross Dataset Initialization to Unseen Architectures}
+% \newpage
+\subsubsection{Sampling Initializations for Unseen Architectures}
+% \todo{Revise: Add resutls from rebuttal here}
+Generalization to unseen large architectures with complex connectivity (ResNet, MobileNet, and EfficientNet) is a very interesting and ambitious research problem. As a step towards that goal, we perform experiments in which we attempted to use our hyper-representation beyond the same simple architecture. Surprisingly, our results indicate the promise of leveraging the hyper-representation for more diverse architectures and settings. 
+Further experiments investigating the cross-architecture generalization capabilities of hyper-representations can be found in Appendix \ref{app:analysis}. 
+
+\textbf{Setup:} With this experiment, we aim to verify if it is possible to adapt our approach to architectures not seen during training, e.g., with skip connections and/or with more layers. We follow the transfer-learning setup of \S~\ref{sec:cross_dataset} and use an existing MNIST hyper-representation to sample weights as initializiation for training on SVHN. However, we now also vary the architecture. 
+While the decoder outputs a fixed-sized vector of weights, we can assign these weights to new architectures by either making sure that the new architecture still has the same number of parameters or by initializing randomly the extra parameters introduced. 
+Specifically, we create three cases: (1) we add ResNet-style skip connections~\citep{heDeepResidualLearning2016} (1x1 conv) to the convolutional layers (3-conv + res-skip), (2) re-distribute the weights to smaller four convolutional layers (4-conv), (3) re-distribute to smaller four convolutional layers and add identity skip connections (4-conv + id.-skip).
+% We explore these variations and present the results in Table 1 below.
+
+
+\begin{wraptable}{r}{0.6\linewidth}
+\vspace{-6mm}
+\captionof{table}{
+Test accuracy (\%) on SVHN of populations with generated weights compared to models trained from scratch $B_T$. Best results for each epoch and dataset are bolded.
+\texttt{r. i.} indicates random initialization, \texttt{gen.} denotes weights generated with our ($S_{\text{KDE}30}$).
+}
+\label{tab:cross_architecture}
+\vspace{2mm}
+% \scriptsize
+\small
+\setlength{\tabcolsep}{2pt}
+% \begin{table}[]
+\begin{tabularx}{\linewidth}{rccc}
+% \begin{tabular}{@{}llll@{}}
+\toprule
+\multicolumn{1}{c}{\textbf{Initialization}} & \multicolumn{1}{c}{\textbf{Epoch 1}} & \multicolumn{1}{c}{\textbf{Epoch 5}} & \multicolumn{1}{c}{\textbf{Epoch 50}} \\ 
+% \midrule
+\cmidrule(r){1-1} \cmidrule(rl){2-2} \cmidrule(rl){3-3} \cmidrule(rl){4-4}
+% 3-conv (r. i.) + res-skip (r. i.)   & 18.9 ± 1.6                         & 31.4 ± 17.9                        & 50.6 ± 27.6                         \\
+3-conv (r. i.) + res-skip (r. i.)   & 18.9 ± 1.6                         & 31.4 ± 17                        & 50.6 ± 28                         \\
+% 3-conv (gen.) + res-skip (r. i.)     & \textbf{34.5 ± 14.4 }              & \textbf{60.5 ± 21.3 }              & \textbf{68.0 ± 21.2}                \\
+3-conv (gen.) + res-skip (r. i.)     & \textbf{34.5 ± 14 }              & \textbf{60.5 ± 21 }              & \textbf{68.0 ± 21}                \\
+\cmidrule(r){1-1} \cmidrule(rl){2-2} \cmidrule(rl){3-3} \cmidrule(rl){4-4}
+% 4-conv (r. i.)                        & 19.2 ± 1.0                         & 19.2 ± 0.9                         & 55.2 ± 11.0                         \\
+4-conv (r. i.)                        & 19.2 ± 1.0                         & 19.2 ± 0.9                         & 55.2 ± 11                         \\
+4-conv (gen.)                          & \textbf{44.0 ± 4.5 }               & \textbf{57.8 ± 3.5 }               & \textbf{67.6 ± 1.9 }                \\
+\cmidrule(r){1-1} \cmidrule(rl){2-2} \cmidrule(rl){3-3} \cmidrule(rl){4-4}
+4-conv + id.-skip (r. i.)        & 18.9 ± 1.0                         & 19.6 ± 1.7                         & 56.4 ± 7.9                          \\
+4-conv + id.-skip (gen.)          & \textbf{48.0 ± 4.0 }               & \textbf{59.9 ± 2.5 }               & \textbf{66.4 ± 1.7 }                \\ 
+\bottomrule
+% \end{tabular}
+\end{tabularx}
+\vspace{-4mm}
+% \end{table}
+\end{wraptable} 
+\textbf{Results:} Surprisingly, despite training our hyper-representation on the models of the same architecture, generated weights for all three cases outperform random initialization and converge significantly faster across all the variations (Table \ref{tab:cross_architecture}). In all the variations even just after 5 epochs the models with generated weights are better than training the baseline for 50 epochs. 
+In the 3-conv + res-skip experiments, some models in both populations did not learn, which leads to high standard deviation. 
+Further analysis is required to explain the gains of our approach in this challenging setup. 
+To extend and scale up our method further, future work could combined it with the methods of growing networks \citep{chenNet2NetAcceleratingLearning2016,wangRecurrentParameterGenerators2021}, so that some layers are generated while some are initialized in a sophisticated way to preserve the functional form of the network.\looseness-1
+%%
+\subsection{Limitations of Zoos with Small Models}\label{sec:limitations}
+% \todo{Revise: Catch high-cost of model zoo training}
+% \todo{Revise: Catch why not bigger, more complex architectures?}
+To thoroughly investigate different methods and make experiments feasible, we chose to use the model zoos of the same small scale as in~\citep{schurholtSelfSupervisedRepresentationLearning2021}. 
+% why small models
+% Models of small size trained on relatively simple classification tasks are actively used in several research communities like meta and continual learning or neural architecture search~\citep{finnModelAgnosticMetaLearningFast2017,zhmoginovHyperTransformerModelGeneration2022,rameshModelZooGrowing2022,yingNASBench101ReproducibleNeural2019}.
+% What is more, hyper-representation learning is inherently related to graph representation learning. The problem size of learning representations of such models is of the same order of magnitude as the upper end of what the graph representation learning community is achieving \citep{daiScalableDeepGenerative2020,winterPermutationInvariantVariationalAutoencoder2021}. Scaling to larger models requires significant effort from the community.
+% tie together
+% Therefore, this work focuses on developing and evaluating inductive biases and methods to train and utilize hyper-representation, which can be scaled up efficiently later.
+% what didn't work
+While on MNIST and SVHN, the architectures of such model zoos allowed us to achieve high performance, on CIFAR-10 and STL-10, the performance of all populations is limited by the low capacity of the models zoo's architecture. The models saturate at around 50\% and 40\% accuracy, respectively. 
+The sampled populations reach the saturation point and fluctuate, but cannot outperform the baselines, see Appendix \ref{app:results} for details. 
+We hypothesize that due to the high remaining loss, the weight updates are correspondingly large without converging or improving performance. 
+This may cause the weights to contain relatively little signal and high noise. 
+% Indeed, learning hyper-representations on the CIFAR-10 and STL-10 zoos was difficult and never reached similar reconstruction performance as in the MNIST and SVHN zoos. That in turn additionally limits the performance of the sampled populations.
+% Future work will therefore focus on architectures with higher capacity, such as recently made available in \citep{schurholtModelZoosDataset2022}. \looseness-1
+Larger model architectures might mitigate this behaviour. Corresponding model zoos have recently been made available in \citep{schurholtModelZoosDataset2022} to tackle this issue\footnote{\href{www.modelzoos.cc}{www.modelzoos.cc}}.\looseness-1
+
+\section{Related Work} 
+
+\textbf{HyperNetworks:}
+Recently, representation learning on neural networks is typically based on HyperNetworks that
+learn low-dimensional structure of model weights to generate weights in a deterministic fashion~\citep{haHyperNetworks2016,bertinetto2016learning,knyazevParameterPredictionUnseen2021,zhangGraphHyperNetworksNeural2019}. HyperNetworks have also been extended to meta-learning by conditioning weight generation on data~\citep{zhmoginovHyperTransformerModelGeneration2022,requeima2019fast}. Closely related to our work, HyperGANs~\citep{ratzlaffHyperGANGenerativeModel2019} can sample model weights by combining the hypernetworks and the GAN framework. Similarly, \citep{deutschGeneratingNeuralNetworks2018} allow for sampling model weights by conditioning the hypernetwork on a noise vector. However, training hypernetwork-based methods require input data (e.g. images) to feed to the neural networks. 
+In practice, there may already be large collections of trained models, while their training data may not always be accessible.
+Learning representations of model weights without data, called hyper-representations, has been recently introduced in~\citep{schurholtSelfSupervisedRepresentationLearning2021}. Our methods build on that work to allow for better reconstruction and sampling.
+\citep{denilPredictingParametersDeep2013} showed that given a few parameters of a network, the remaining values of a single model can be accurately reconstructed. However, in our work we leverage the autoencoder to train a representation of the entire model zoo. 
+Very recently, \citep{peeblesLearningLearnGenerative2022} use diffusion on a population of models to generate model weights for the original task via prompting.\looseness-1
+
+\textbf{Transfer Learning:}
+Transfer learning via fine-tuning aims at re-using models and their learned knowledge from a source to a target task~\citep{yosinskiHowTransferableAre2014,chen2019closer,dhillon2019baseline,mensinkFactorsInfluenceTransfer2021,kolesnikov2020big}. 
+Transfer learning models makes training less expensive, boosts performance, or allows to train on datasets with very few samples and has been applied on a wide range of domains~\citep{zhuangComprehensiveSurveyTransfer2020}. 
+The common transfer learning methods however only consider transferring from a single model, and so disregard the large variety of pre-trained models and potential benefit of combining them.
+
+\textbf{Knowledge distillation:} Our work is related to~\citep{wang2018adversarial,liuKnowledgeFlowImprove2019,shuZooTuningAdaptiveTransfer2021} that allow to distill knowledge from a model zoo into a single network. Knowledge distillation overcomes the inherent limitation of transfer learning by transferring the knowledge from many large teacher models to a relatively small student model~\citep{liuKnowledgeFlowImprove2019,shuZooTuningAdaptiveTransfer2021}. 
+Knowledge distillation however requires the source models at training as in~\citep{liuKnowledgeFlowImprove2019} and at inference as in\citep{shuZooTuningAdaptiveTransfer2021} thus increasing memory cost. Further, the learned knowledge cannot be shared between different target models.
+\textbf{Learnable initialization} \citep{dauphinMetaInitInitializingLearning2019,zhu2021gradinit} provide methods to improve initialization by leveraging the meta-learning and gradient-flow ideas.
+In contrast to knowledge distillation and learnable initialization, we train a hyper-representation of a model zoo in a latent space, which is a more general and powerful approach that can enable sampling an ensemble, property estimation, improved initialization and implicit knowledge distillation across datasets.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+In this paper, we propose a new method to sample from hyper-representations to generate neural network weights in one forward pass.
+We extend the training objective of hyper-representations by a novel layer-wise loss normalization which is key to the capability of generating functional models.
+Our method allows us to generate diverse populations of model weights, which show high performance as ensembles.
+We evaluate sampled models both in-dataset as well as in transfer learning and find them capable to outperform both models trained from scratch, as well as pre-trained and fine-tuned models.
+Populations of sampled models, even for some unseen architectures, generally learn faster and achieve statistically significantly higher performance. 
+This demonstrates that such hyper-representation can be used as a generative model for neural network weights and therefore might serve as a building block for transfer learning from different domains, meta learning or continual learning.\looseness-1
+
+\section*{Acknowledgments}
+This work was partially funded by Google Research Scholar Award, the University of St.Gallen Basic Research Fund, and project PID2020-117142GB-I00 funded by MCIN/ AEI /10.13039/501100011033.
+% KS and DB are thankful to the University of St.Gallen Basic Research Fund, which funded the initial phase of this work.
+% \todo{@all: could you add your Acknowledgements / funding here?}
+We are thankful to Michael Mommert for editorial support.
+% We also appreciate the reviewers' constructive feedback that improved our work.
+
+\newpage
+\bibliographystyle{plainnat}
+\bibliography{./bibliography_auto.bib,./bibliography_manual.bib}
+% \bibliography{./bibliography_auto.bib}
+% \bibliography{./bibliography_manual.bib}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\include{checklist}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\appendix
+
+
+\include{appendix}
+
+
+\end{document}

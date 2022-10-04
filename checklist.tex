@@ -1,0 +1,87 @@
+\section*{Checklist}
+
+
+%%% BEGIN INSTRUCTIONS %%%
+The checklist follows the references.  Please
+read the checklist guidelines carefully for information on how to answer these
+questions.  For each question, change the default \answerTODO{} to \answerYes{},
+\answerNo{}, or \answerNA{}.  You are strongly encouraged to include a {\bf
+justification to your answer}, either by referencing the appropriate section of
+your paper or providing a brief inline description.  For example:
+\begin{itemize}
+  \item Did you include the license to the code and datasets? \answerYes{See Section.}
+  \item Did you include the license to the code and datasets? \answerNo{The code and the data are proprietary.}
+  \item Did you include the license to the code and datasets? \answerNA{}
+\end{itemize}
+Please do not modify the questions and only use the provided macros for your
+answers.  Note that the Checklist section does not count towards the page
+limit.  In your paper, please delete this instructions block and only keep the
+Checklist section heading above along with the questions/answers below.
+%%% END INSTRUCTIONS %%%
+
+
+\begin{enumerate}
+
+
+\item For all authors...
+\begin{enumerate}
+  \item Do the main claims made in the abstract and introduction accurately reflect the paper's contributions and scope?
+    \answerYes{}
+  \item Did you describe the limitations of your work?
+    \answerYes{See Section~\ref{sec:limitations} and ~\ref{sec:conclusion}}
+  \item Did you discuss any potential negative societal impacts of your work?
+    \answerNo{The method we propose is a general machine learning method. It comes with all the risks involved, but in our opinion does not pose any particular risk.}
+  \item Have you read the ethics review guidelines and ensured that your paper conforms to them?
+    \answerYes{}
+\end{enumerate}
+
+
+\item If you are including theoretical results...
+\begin{enumerate}
+  \item Did you state the full set of assumptions of all theoretical results?
+    \answerNA{}
+        \item Did you include complete proofs of all theoretical results?
+    \answerNA{}
+\end{enumerate}
+
+
+\item If you ran experiments...
+\begin{enumerate}
+  \item Did you include the code, data, and instructions needed to reproduce the main experimental results (either in the supplemental material or as a URL)?
+     \answerYes{Code, hyper-representations of selected model zoos are included in the supplemental material}
+  \item Did you specify all the training details (e.g., data splits, hyperparameters, how they were chosen)?
+    \answerYes{All the details are specified in the Appendix \ref{app:zoos} and~\ref{app:training}.}
+  \item Did you report error bars (e.g., with respect to the random seed after running experiments multiple times)?
+    \answerYes{We report means and std for all experiments in the main paper and provide additional details about median, CI95 on the median, p-value and effect size in the Appendix~\ref{app:results}}
+        \item Did you include the total amount of compute and the type of resources used (e.g., type of GPUs, internal cluster, or cloud provider)?
+    \answerYes{See Appendix~\ref{app:training}}
+\end{enumerate}
+
+
+\item If you are using existing assets (e.g., code, data, models) or curating/releasing new assets...
+\begin{enumerate}
+  \item If your work uses existing assets, did you cite the creators?
+    \answerYes{}
+  \item Did you mention the license of the assets?
+    \answerYes{See Section ~\ref{app:zoos}}
+  \item Did you include any new assets either in the supplemental material or as a URL?
+    \answerYes{We have trained new model zoos and will make them publicly available via an URL}
+  \item Did you discuss whether and how consent was obtained from people whose data you're using/curating?
+    \answerNA{Our experiments use publicly available image datasets, which we cite. The model zoos and code for hyper-representation learning was published on github and zenodo by the authors of the original paper under Creative Commons Attribution 4.0.}
+  \item Did you discuss whether the data you are using/curating contains personally identifiable information or offensive content?
+    \answerNA{Our experiments rely on common computer vision datasets and do not contain personally identifiable information nor offensive content.}
+\end{enumerate}
+
+
+\item If you used crowdsourcing or conducted research with human subjects...
+\begin{enumerate}
+  \item Did you include the full text of instructions given to participants and screenshots, if applicable?
+    \answerNA{}
+  \item Did you describe any potential participant risks, with links to Institutional Review Board (IRB) approvals, if applicable?
+    \answerNA{}
+  \item Did you include the estimated hourly wage paid to participants and the total amount spent on participant compensation?
+    \answerNA{}
+\end{enumerate}
+
+
+\end{enumerate}

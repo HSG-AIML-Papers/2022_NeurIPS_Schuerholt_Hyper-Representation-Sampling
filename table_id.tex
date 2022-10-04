@@ -1,0 +1,52 @@
+\begin{table}[t]
+\begin{minipage}[t]{0.98\textwidth}
+\centering
+{\small
+\begin{tabular}{l|ccc|cc}
+\toprule
+\multicolumn{6}{c}{\textbf{Version 1 - ID only}}  \\
+\multicolumn{6}{c}{\texttt{In-Distribution Experiments - Accuracies}}  \\
+ & MNIST & SVHN & USPS & CIFAR-10 & STL-10 \\
+\midrule
+$B_T$ & 0.911 [0.911, 0.912] & 0.723 [0.720, 0.724] & 0.922 [0.921, 0.922] & 0.444 [0.444, 0.444] & 0.555 [0.555, 0.555]\\ 
+%\midrule
+$B_F$ & 0.912 [0.910, 0.913] & 0.732 [0.728, 0.734] & 0.922 [0.921, 0.923] & 0.444 [0.444, 0.444] & 0.555 [0.555, 0.555]\\ 
+\midrule
+$S_{N30}$ & \textbf{0.940 [0.939, 0.941]} & \textbf{0.765 [0.763, 0.767]} & 0.911 [0.911, 0.913] & 0.444 [0.444, 0.444] & 0.555 [0.555, 0.555]\\ 
+%\midrule
+$S_{D30}$ & 0.932 [0.931, 0.933] & 0.742 [0.739, 0.745] & \textbf{0.925 [0.924, 0.926]} & 0.444 [0.444, 0.444] & 0.555 [0.555, 0.555]\\ 
+\end{tabular}
+}
+\caption{Accuracy of sampled models: median and 95\% confidence intervals. }
+\label{tab:accuracy_static_id}
+\end{minipage}
+\vspace{-.2in}
+\end{table}
+
+
+\begin{table}[t]
+\begin{minipage}[t]{0.98\textwidth}
+\centering
+{\small
+\begin{tabular}{l|ccc|cc}
+\toprule
+\multicolumn{6}{c}{\textbf{Version 1 - ID only}}  \\
+\multicolumn{6}{c}{\texttt{In-Distribution Experiments - Statistical Hypothesis Test}}  \\
+ & MNIST & SVHN & USPS & CIFAR-10 & STL-10 \\
+\midrule
+$S_{D30}$ vs. $B_T$ & 8.6e-73 | 0.9689 & 1.6e-30 | 0.7985 & 7.0e-10 | 0.6601 & 0.444 | 0.444  & 0.555 | 0.555 \\ 
+%\midrule
+$S_{N30}$ vs. $B_T$ & 5.6e-82 | 0.9983 &  4.7e-76 | 0.9797 & 1.7e-42 | 0.1450 & 0.444 | 0.444  & 0.555 | 0.555 \\ 
+\midrule
+$S_{D30}$ vs. $B_F$ & 4.0e-45 | 0.9707 & 3.0e-08 | 0.6850 & 2.9e-04 | 0.6208 & 0.444 | 0.444  & 0.555 | 0.555 \\ 
+%\midrule
+$S_{N30}$ vs. $B_F$ & 1.5e-50 | 0.9983 & 1.7e-42 | 0.9563 & 3.6e-28 | 0.1326 & 0.444 | 0.444  & 0.555 | 0.555 \\ 
+\end{tabular}
+}
+\caption{Mann-Whitney U test of Samples S vs Baselines B: p-value and CLES (Common Language Effect Strength). p-values indicate the probability of the samples of two groups originating from the same distribution. CLES=0.5 indicates no effect, CLES=1.0 a strong positive, CLES=0.0 a strong negative effect.
+As the results indicate, both proposed sampling methods are almost always statistically significantly better than the two baselines. Further, their effect is often very strong. 
+}
+\label{tab:test_static_id}
+\end{minipage}
+\vspace{-.2in}
+\end{table}

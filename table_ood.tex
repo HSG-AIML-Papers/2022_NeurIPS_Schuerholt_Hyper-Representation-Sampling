@@ -1,0 +1,335 @@
+\begin{table}[t]
+\begin{minipage}[t]{0.98\textwidth}
+\centering
+\caption{\small Mean and standard deviation of the accuracy (\%) of the populations trained on image classification tasks \textbf{after fine-tuning}. On the main diagonal are in-distribution experiments, otherwise out-of-distribution from source to target. 
+%$B_T$ denotes the baseline trained directly on the target dataset. 
+% The other populations have at least 50 members each. 
+%$B_F$ is the second baseline pre-trained on source and fine-tuned on target. 
+%$S_{\text{Distr}}$ is the distribution-based, %$S_{\text{Neigh}}$ the neighborhood-based, and %$S_{\text{GAN}}$ the GAN-based sampling method. 
+% The suffix $30$ indicates that the sampling method was based on the top 30 \% of the train set. 
+Bold numbers highlight the best source-to-target results. 
+% Confidence intervals, p-values and effect size can be found in the Appendix.
+% $B_T$ denotes the baseline with 700 members trained directly on the target dataset. The other populations have at least 50 members each. $B_F$ is the second baseline pre-trained on source and fine-tuned on target. $S_{\text{Distr}}$ is the distribution based sampling method, $S_{\text{Neigh}}$ the neighborhood based sampling method. The suffix $30$ indicates that the sampling method was based on the top 30 \% of the train set. Bold numbers highlight the best source-to-target results. Confidence intervals, p-values and effect size can be found in the Appendix.
+}
+\label{tab:accuracies}
+{\scriptsize
+\setlength{\tabcolsep}{8pt}
+\begin{tabular}{lccccccc}
+\toprule
+% \multicolumn{5}{c}{\textbf{Version 2 - ID+OOD}}  \\
+ &\multicolumn{4}{c}{\texttt{Digit Classification}} & \multicolumn{3}{c}{\texttt{Natural Image Classification}}  \\
+ \cmidrule(r){2-5} \cmidrule(l){6-8}
+% \midrule
+Population & Source & \multicolumn{3}{c}{\texttt{Target}}  & Source & \multicolumn{2}{c}{\texttt{Target}} \\
+\cmidrule(r){1-1} \cmidrule(rl){2-2} \cmidrule(rl){3-5} \cmidrule(rl){6-6}  \cmidrule(l){7-8}
+% \midrule
+            &                           & MNIST                     & SVHN                     & USPS                       &                            & CIFAR-10                     & STL-10 \\
+% \midrule
+\cmidrule(rl){3-5}  \cmidrule(l){7-8}
+From scratch ($B_T$)      &                           & 91.1 | 0.95               & 70.7 | 8.80              & \textbf{92.2 | 0.58}       &                            & \textbf{48.7 | 1.38} 	    &         39.0 | 1.02 \\
+% \midrule
+\cmidrule(r){1-1} \cmidrule(rl){2-2}  \cmidrule(rl){3-5} \cmidrule(rl){6-6} \cmidrule(l){7-8}
+% $B_T$     & MNIST                     & 0.911               & 0.222           & 0.333 \\ 
+Fine-tune ($B_F$)       & \multirow{7}{*}{MNIST}    & 91.1 | 0.88               & 76.1 | 1.35              & 79.3 | 1.85                & \multirow{7}{*}{CIFAR-10} &  48.3 | 1.26                  & \textbf{42.7 | 1.22} \\  
+% \hdashline
+% \cmidrule(r){1-1}  \cmidrule(rl){3-5}  \cmidrule(l){7-8}
+$S_{\text{Distr}}$     &                           & 92.5 | 0.75               & 76.4 | 1.55              & 79.2 | 2.17                &                            & 48.0 | 1.16                  &         40.6 | 1.07 \\
+$S_{\text{Distr}30}$   &                           & 93.0 | 0.68               & \textbf{77.1 | 1.45}     & \textbf{80.8 | 0.83}       &                            & \textbf{48.6 | 0.53 }        &         41.1 | 0.93 \\
+$S_{\text{Neigh}}$     &                           & 93.3 | 0.52               & 76.8 | 1.07              & 78.5 | 1.46                &                           &  45.2 | 1.33                  &         36.5 | 1.98 \\
+$S_{\text{Neigh}30}$   &                           & \textbf{94.0 | 0.56}      & 76.7 | 1.32              & 79.6 | 1.31                &                           &   46.2 | 0.81                 &         37.9 | 1.57 \\ 
+$S_{\text{GAN}}$     &                           & 93.5 | 0.60               & 74.6 | 11.32             & 78.9 | 1.64                &                           & 46.1 | 0.96                   &         38.6 | 1.41 \\
+$S_{\text{GAN}30}$   &                           & 93.8 | 0.63               & 76.5 | 1.75              & 80.0 | 1.32                &                           & 46.7 | 0.87                   &         38.4 | 1.35 \\
+% \midrule
+\cmidrule(r){1-1} \cmidrule(rl){2-2}  \cmidrule(rl){3-5} \cmidrule(rl){6-6} \cmidrule(l){7-8}
+Fine-tune ($B_F$)       & \multirow{7}{*}{SVHN}     & 95.0 | 0.78               & 72.4 | 6.36              & 87.1 | 1.68                & \multirow{7}{*}{STL-10}    & \textbf{49.2 | 0.70 	}       & \textbf{39.2 | 1.01}   \\  
+% \hdashline
+% \cmidrule(r){1-1}  \cmidrule(rl){3-5}  \cmidrule(l){7-8}
+$S_{\text{Distr}}$     &                           & 95.0 | 0.81               & 71.8 | 7.68              & 87.0 | 1.72                &                             & 48.7 | 0.77                 & 37.4 | 1.28 	   \\ 
+$S_{\text{Distr}30}$   &                           & \textbf{95.5 | 0.40}      & 74.2 | 1.39              & \textbf{88.3 | 1.09}       &                            & 48.8 | 0.90                   & 38.1 | 1.13   \\ 
+$S_{\text{Neigh}}$     &                           & 95.9 | 9.85               & \textbf{77.9 | 1.40}      & 88.3 | 1.96                &                            & 10.0 | 0.00                  & 28.5 | 2.43  \\  
+$S_{\text{Neigh}30}$   &                           & 95.5 | 0.68               & 76.4 | 1.02              & 85.8 | 1.49                &                            & 48.9 | 0.67 	                & 38.0 | 1.14 	   \\  
+$S_{\text{GAN}}$     &                           & 94.3 | 0.87               & 74.3 | 1.39              & 82.3 | 2.63                &                             & 49.0 | 0.77 	                & 38.3 | 1.21 	   \\
+$S_{\text{GAN}30}$   &                           & 94.9 | 0.72               & 75.1 | 1.24              & 84.3 | 2.22                &                             & xx.x | x.xx 	                & 38.2 | 0.96 	   \\  
+% \midrule
+% \cmidrule(r){1-1} \cmidrule(rl){2-2}  \cmidrule(rl){3-5}% \cmidrule(rl){6-6} \cmidrule(l){7-8}
+
+$B_F$       & \multirow{7}{*}{USPS}     &  97.8 | 0.17              & 79.4 | 0.97      & 92.3 | 0.60                \\ 
+% \cdashline{1-5}
+$S_{\text{Distr}}$     &                           &  97.9 | 0.19              & 79.3 | 0.97              & 92.3 | 0.60                \\ 
+$S_{\text{Distr}30}$   &                           & 97.9 | 0.18               & \textbf{79.6 | 0.80}     & \textbf{92.7 | 0.51}               \\
+$S_{\text{Neigh}}$     &                           & \textbf{98.0 | 0.18}      & 79.4 | 0.97              & 89.4 | 2.12                \\ 
+$S_{\text{Neigh}30}$   &                           & 97.9 | 0.20               & 79.3 | 0.83              & 91.2 | 1.21               \\ 
+$S_{\text{GAN}}$     &                           & 97.7 | 0.21               & 79.2 | 1.02              & 90.9 | 0.94                \\  
+$S_{\text{GAN}30}$   &                           & 97.8 | 0.24               & 79.5 | 0.58              & 91.2 | 0.76                \\  
+\bottomrule
+\end{tabular}
+}
+
+\end{minipage}
+\end{table}
+
+% \begin{table}[]
+% \begin{minipage}[t]{0.98\textwidth}
+% \centering
+% {\small
+% \begin{tabular}{l|llll|lll}
+%                               & \multicolumn{4}{c|}{\textbf{Digit Classification}}                                                                            & \multicolumn{3}{c}{\textbf{Natural Image Classification}}                   \\ \hline
+% Population                     & Source                                     & \multicolumn{3}{c|}{Target}                                                      & \multicolumn{1}{l|}{Source}                    & \multicolumn{2}{c}{Target} \\ \hline
+% \multicolumn{1}{r|}{\textbf{}} & \multicolumn{1}{r}{\textbf{}}              & \multicolumn{1}{r}{MNIST} & \multicolumn{1}{r}{SVHN} & \multicolumn{1}{r|}{USPS} & \multicolumn{1}{l|}{}                          & CIFAR-10      & STL-10     \\ \hline
+
+% base                           & \multicolumn{1}{l|}{\multirow{7}{*}{SVHN}} & 91.1 | 0.95               & 70.7 | 8.80              & 91.1 | 0.95               & \multicolumn{1}{l|}{\multirow{7}{*}{STL-10}}   &               &            \\
+% direct                         & \multicolumn{1}{l|}{}                      & 95.0 | 0.78               & 72.4 | 6.36              & 95.0 | 0.78               & \multicolumn{1}{l|}{}                          &               &            \\
+% uniform                        & \multicolumn{1}{l|}{}                      & 91.7 | 1.07               & 70.6 | 4.58              & 91.7 | 1.07               & \multicolumn{1}{l|}{}                          &               &            \\
+% train                          & \multicolumn{1}{l|}{}                      & 95.9 | 9.85               & 77.9 | 1.40              & 95.9 | 9.85               & \multicolumn{1}{l|}{}                          &               &            \\
+% best                           & \multicolumn{1}{l|}{}                      & 95.5 | 0.68               & 76.4 | 1.02              & 95.5 | 0.68               & \multicolumn{1}{l|}{}                          &               &            \\
+% kde\_z\_train                  & \multicolumn{1}{l|}{}                      & 95.0 | 0.81               & 71.8 | 7.68              & 95.0 | 0.81               & \multicolumn{1}{l|}{}                          &               &            \\
+% kde\_z\_best                   & \multicolumn{1}{l|}{}                      & 95.5 | 0.40               & 74.2 | 1.39              & 95.5 | 0.40               & \multicolumn{1}{l|}{}                          &               &            \\ \hline
+% base                           & \multicolumn{1}{l|}{\multirow{7}{*}{USPS}} & 91.1 | 0.95               & 70.7 | 8.80              & 92.2 | 0.58               &                                                &               &            \\
+% direct                         & \multicolumn{1}{l|}{}                      & 97.8 | 0.17               & 97.8 | 0.18              & 92.3 | 0.60               &                                                &               &            \\
+% train                          & \multicolumn{1}{l|}{}                      & 98.0 | 0.18               & NaN                      & 89.4 | 2.12               &                                                &               &            \\
+% best                           & \multicolumn{1}{l|}{}                      & 97.9 | 0.20               & 79.3 | 0.83              & 91.2 | 1.21               &                                                &               &            \\
+% kde\_z\_train                  & \multicolumn{1}{l|}{}                      & 97.9 | 0.19               & NaN                      & 92.3 | 0.60               &                                                &               &            \\
+% kde\_z\_best                   & \multicolumn{1}{l|}{}                      & 97.9 | 0.18               & NaN                      & 92.7 | 0.51               &                                                &               &            \\
+% uniform                        & \multicolumn{1}{l|}{}                      & NaN                       & NaN                      & 78.8 | 2.23               &                                                &               &           
+% \end{tabular}
+% \caption{Median accuracy of the populations trained on image classification tasks after fine-tuning. On the main diagonal are in-distribution experiments, otherwise out-of-distribution from source to target. $B_T$ denotes the baseline with 700 members trained directly on the target dataset. The other populations have at least 50 members each. $B_F$ is the second baseline pre-trained on source and fine-tuned on target. $S_{\text{Distr}}$ is the distribution based sampling method, $S_{\text{Neigh}}$ the neighborhood based sampling method. The suffix $30$ indicates that the sampling method was based on the top 30 \% of the train set. Bold numbers highlight the best source-to-target results. Confidence intervals, p-values and effect size can be found in the Appendix.
+% \todo{add stderror / CIs | remove second population | remove USPS source}
+% }
+% \label{tab:accuracies}
+% }
+% \end{minipage}
+% \end{table}
+
+
+
+% \begin{table}[t]
+% \begin{minipage}[t]{0.98\textwidth}
+% \centering
+% {\small
+% \begin{tabular}{l|l|ccc|l|l|cc}
+% \toprule
+% % \multicolumn{5}{c}{\textbf{Version 2 - ID+OOD}}  \\
+% \multicolumn{5}{c|}{\texttt{Digit Classification}} & \multicolumn{4}{c}{\texttt{Natural Image Classificationw}}  \\
+
+% \midrule
+% Population & Source & \multicolumn{3}{c|}{\texttt{Target}}  & Population & Source & \multicolumn{2}{c}{\texttt{Target}} \\
+% \midrule
+%             &                           & MNIST             & SVHN              & USPS              &               &                           & CIFAR-10                 & STL-10 \\
+% \midrule
+% $B_T$       &                           & 0.911              & 0.723            & \textbf{0.922}    & $B_T$         &                           &        0.490             &         0.390 \\
+% \midrule
+% % $B_T$     & MNIST                     & 0.911               & 0.222           & 0.333 \\ 
+% $B_F$       & \multirow{5}{*}{MNIST}    & 0.912               & 0.762           & 0.791             & $B_F$         & \multirow{5}{*}{CIFAR-10} &        0.486             & \textbf{0.428} \\  
+% \hdashline
+% $S_{\text{Distr}}$     &                           & 0.923               & 0.767           & 0.794             & $S_{\text{Distr}}$       &                           &        0.483             &         0.407 \\
+% $S_{\text{Distr}30}$   &                           & 0.931               & \textbf{0.772 } & \textbf{0.808}   & $S_{\text{Distr}30}$     &                           & \textbf{0.487 }          &         0.413  \\
+% $S_{\text{Neigh}}$     &                           & 0.934               & 0.768           & 0.789	            & $S_{\text{Neigh}}$       &                           &        0.456             &         0.367  \\
+% $S_{\text{Neigh}30}$   &                           & \textbf{0.940}      & 0.770           & 0.796	            & $S_{\text{Neigh}30}$     &                           &        0.462             &         0.379  \\
+% \midrule
+% $B_F$       & \multirow{5}{*}{SVHN}     & 0.951               & 0.732           & 0.872             &  $B_F$       & \multirow{5}{*}{STL-10}    & \textbf{0.493}  & \textbf{0.395}   \\  
+% \hdashline
+% $S_{\text{Distr}}$     &                           & 0.951               & 0.730           & 0.872             &  $S_{\text{Distr}}$     &                            & 0.486                     & 0.373   \\ 
+% $S_{\text{Distr}30}$   &                           & 0.955               & 0.742           & 0.883             &  $S_{\text{Distr}30}$   &                           & 0.488                      & 0.383   \\ 
+% $S_{\text{Neigh}}$     &                           & \textbf{0.972 }     & \textbf{0.781 } & \textbf{0.887 }   &  $S_{\text{Neigh}}$     &                           & 0.100                      & 0.283  \\  
+% $S_{\text{Neigh}30}$   &                           & 0.955               & 0.765           & 0.858             &  $S_{\text{Neigh}30}$   &                           & 0.490                      & 0.378   \\  
+% \midrule
+% $B_F$       & \multirow{5}{*}{USPS}     & 0.978               & 0.795  	          & 0.923 \\ 
+% \cdashline{1-5}
+% $S_{\text{Distr}}$     &                           &                     & 0.795           & 0.922	 \\ 
+% $S_{\text{Distr}30}$   &                           & \textbf{0.980}      & \textbf{0.796 } & \textbf{0.927 }\\
+% $S_{\text{Neigh}}$     &                           &                     & 0.795           & 0.900 \\ 
+% $S_{\text{Neigh}30}$   &                           & \textbf{0.980}      & 0.792           & 0.913 \\ 
+% \bottomrule
+% \end{tabular}
+% }
+% \caption{Median accuracy of the populations trained on image classification tasks after fine-tuning. On the main diagonal are in-distribution experiments, otherwise out-of-distribution from source to target. $B_T$ denotes the baseline with 700 members trained directly on the target dataset. The other populations have at least 50 members each. $B_F$ is the second baseline pre-trained on source and fine-tuned on target. $S_{\text{Distr}}$ is the distribution based sampling method, $S_{\text{Neigh}}$ the neighborhood based sampling method. The suffix $30$ indicates that the sampling method was based on the top 30 \% of the train set. Bold numbers highlight the best source-to-target results. Confidence intervals, p-values and effect size can be found in the Appendix.
+% \todo{add stderror / CIs | remove second population | remove USPS source}
+% }
+% \label{tab:accuracies}
+% \end{minipage}
+% \end{table}
+
+
+% \begin{table}[t]
+% \begin{minipage}[t]{0.48\textwidth}
+% \centering
+% {\small
+% \begin{tabular}{l|l|ccc}
+% \toprule
+% % \multicolumn{5}{c}{\textbf{Version 2 - ID+OOD}}  \\
+% \multicolumn{5}{c}{\texttt{Digit Classification - Accuracies}}  \\
+% \midrule
+% & Source & \multicolumn{3}{c}{\texttt{Target}}  \\
+% \midrule
+%             &       & MNIST             & SVHN              & USPS \\
+% \midrule
+% $B_T$       &       & 0.911              & 0.723            & 0.922 \\ 
+% \midrule
+% % $B_T$     & MNIST & 0.911               & 0.222           & 0.333 \\ 
+% $B_F$       & MNIST & 0.912               & 0.763           & 0.796 \\ 
+% $S_{\text{Distr}}$     & MNIST & 0.927               & 0.795           & 0.936 \\
+% $S_{\text{Distr}30}$   & MNIST & 0.932               & 0.794           & \textbf{0.937 }\\
+% $S_{\text{Neigh}}$     & MNIST & 0.932               & \textbf{0.797 } & 0.925	 \\ 
+% $S_{\text{Neigh}30}$   & MNIST & \textbf{0.940}      & \textbf{0.794 } & 0.928	 \\ 
+% %\midrule
+% \midrule
+% % $B_T$     & SVHN  & 0.111               & 0.723           & 0.333 \\ 
+% %\midrule
+% $B_F$       & SVHN  & 0.951               & 0.732           & 0.872  \\ 
+% $S_{\text{Distr}}$     & SVHN  & 0.951               & 0.730           & 0.872 \\
+% $S_{\text{Distr}30}$   & SVHN  & \textbf{0.955 }     & 0.742           & \textbf{0.883 }\\
+% $S_{\text{Neigh}}$     & SVHN  & \textbf{0.972 }     & \textbf{0.781 } & \textbf{0.887 } \\ 
+% $S_{\text{Neigh}30}$   & SVHN  & 0.955               &\textbf{0.765 }  & 0.858\\ 
+% %\midrule
+% \midrule
+% % $B_T$     & USPS  & 0.111               & 0.222           & 0.922 \\ 
+% %\midrule
+% $B_F$       & USPS  & 0.978               & 0.795  	          & 0.922 \\ 
+% $S_{\text{Distr}}$     & USPS  & 0.980               & 0.795           & 0.922	 \\ 
+% $S_{\text{Distr}30}$   & USPS  & 0.980               & \textbf{0.796 } & \textbf{0.925 }\\
+% $S_{\text{Neigh}}$     & USPS  & 0.980               & 0.795           & 0.897 \\ 
+% $S_{\text{Neigh}30}$   & USPS  & \textbf{0.980 }     & 0.792           & 0.911 \\ 
+% %\midrule
+% \midrule
+% \end{tabular}
+% }
+% % \caption{Accuracy of sampled models: median and 95\% confidence intervals. On the main diagonal are in-distribution experiments, otherwise out-of-distribution from source to target. Bold numbers highlight the best source-to-target results. A * denotes cases, in which the boot-strapped CI on the median could not be computed. We report the 95\% CI on the mean instead.}
+% % \label{tab:accuracy_digits}
+% \end{minipage}
+% % \end{table}
+% \hspace{2mm}
+% % \begin{table}[t]
+% \begin{minipage}[t]{0.48\textwidth}
+% \centering
+% {\small
+% \begin{tabular}{l|l|cc}
+% \toprule
+% \multicolumn{4}{c}{\texttt{Natural Image Classification - Accuracies}}  \\
+% \midrule
+% & Source & \multicolumn{2}{c}{\texttt{Target}}  \\
+% \midrule
+%             & & CIFAR-10 & STL-10 \\
+% \midrule
+% $B_T$       &  &        0.490             &         0.390 \\
+% \midrule
+% $B_F$       & CIFAR-10  &        0.486             & \textbf{0.428} \\ 
+% $S_{\text{Distr}}$     & CIFAR-10  &        0.483             &         0.407 \\
+% $S_{\text{Distr}30}$   & CIFAR-10  & \textbf{0.487 }          &         0.413  \\
+% $S_{\text{Neigh}}$     & CIFAR-10  &        0.456             &         0.367  \\
+% $S_{\text{Neigh}30}$   & CIFAR-10  &        0.111             &         0.379  \\
+% %\midrule
+% \midrule
+% % $B_T$       & STL-10    & 0.111 [0.111, 0.111] & 0.222 [0.222, 0.222] \\ 
+% %\midrule
+% $B_F$       & STL-10    & 0.111  & 0.222   \\ 
+% $S_{\text{Distr}}$     & STL-10    & 0.111  & 0.222   \\ 
+% $S_{\text{Distr}30}$   & STL-10    & 0.111  & 0.222   \\ 
+% $S_{\text{Neigh}}$     & STL-10    & 0.111  & 0.222  \\ 
+% $S_{\text{Neigh}30}$   & STL-10    & 0.111  & 0.222   \\ 
+% \midrule
+% \end{tabular}
+% }
+% % \caption{Accuracy of sampled models: median and 95\% confidence intervals. }
+% % \label{tab:accuracy_natural_images}
+% \end{minipage}
+% \caption{Accuracy of sampled models: median and 95\% confidence intervals. On the main diagonal are in-distribution experiments, otherwise out-of-distribution from source to target. Bold numbers highlight the best source-to-target results. A * denotes cases, in which the boot-strapped CI on the median could not be computed. We report the 95\% CI on the mean instead.}
+% \label{tab:accuracy_digits}
+
+% \vspace{-.2in}
+% \end{table}
+
+
+
+
+
+
+
+
+
+
+
+% \begin{table}[t]
+% \begin{minipage}[t]{0.98\textwidth}
+% \centering
+% {\small
+% \begin{tabular}{l|l|ccc}
+% \toprule
+% \multicolumn{5}{c}{\textbf{Version 2 - ID+OOD}}  \\
+% \multicolumn{5}{c}{\texttt{Digit Classification - Accuracies}}  \\
+% \midrule
+% & Source & \multicolumn{3}{c}{\texttt{Target}}  \\
+% \midrule
+%             &       & MNIST                             & SVHN                          & USPS \\
+% \midrule
+% $B_T$       &       & 0.911 [0.911, 0.912]              & 0.723 [0.720, 0.724]          & 0.922 [0.921, 0.922]\\ 
+% \midrule
+% % $B_T$     & MNIST & 0.911 [0.911, 0.912]              & 0.222 [0.222, 0.222]          & 0.333 [0.333, 0.333]\\ 
+% $B_F$       & MNIST & 0.912 [0.910, 0.913]              & 0.763 [0.758, 0.765]          & 0.796 [0.793, 0.799]*\\ 
+% $S_{\text{Distr}}$     & MNIST & 0.927 [0.925, 0.928]              & 0.795 [0.792, 0.797]          & 0.936 [0.935, 0.936]\\
+% $S_{\text{Distr}30}$   & MNIST & 0.932 [0.931, 0.933]              & 0.794 [0.792, 0.795]          & \textbf{0.937	[0.936, 0.937]}\\
+% $S_{\text{Neigh}}$     & MNIST & 0.932 [0.931, 0.933]              & \textbf{0.797 [0.796, 0.799]} & 0.925	[0.924, 0.927]\\ 
+% $S_{\text{Neigh}30}$   & MNIST & \textbf{0.940 [0.939, 0.941]}     & \textbf{0.794 [0.793, 0.796]} & 0.928	[0.926, 0.928]\\ 
+% %\midrule
+% \midrule
+% % $B_T$     & SVHN  & 0.111 [0.111, 0.111]              & 0.723 [0.720, 0.724]          & 0.333 [0.333, 0.333]\\ 
+% %\midrule
+% $B_F$       & SVHN  & 0.951 [0.950, 0.953]              & 0.732 [0.728, 0.734]          & 0.872 [0.870, 0.874]\\ 
+% $S_{\text{Distr}}$     & SVHN  & 0.951 [0.948, 0.951]              & 0.730	[0.726, 0.733]          & 0.872	[0.867, 0.879]\\
+% $S_{\text{Distr}30}$   & SVHN  & \textbf{0.955 [0.953, 0.957]}     & 0.742 [0.739, 0.745]          & \textbf{0.883 [0.880, 0.885]}\\
+% $S_{\text{Neigh}}$     & SVHN  & \textbf{0.972 [0.970, 0.973]}     & \textbf{0.781 [0.779, 0.782]} & \textbf{0.887 [0.882, 0.889]} \\ 
+% $S_{\text{Neigh}30}$   & SVHN  & 0.955 [0.954, 0.957]              &\textbf{0.765 [0.763, 0.767]}  & 0.858 [0.855, 0.861]\\ 
+% %\midrule
+% \midrule
+% % $B_T$     & USPS  & 0.111 [0.111, 0.111]              & 0.222 [0.222, 0.222]          & 0.922 [0.921, 0.922]\\ 
+% %\midrule
+% $B_F$       & USPS  & 0.978 [0.978, 0.979]              & 0.795 [0.793, 0.797] 	          & 0.922 [0.921*, 0.923*]\\ 
+% $S_{\text{Distr}}$     & USPS  & 0.980	[0.979, 0.980]              & 0.795	[0.792, 0.796]          & 0.922	[0.921, 0.923]\\ 
+% $S_{\text{Distr}30}$   & USPS  & 0.980 [0.979, 0.980]              & \textbf{0.796 [0.794, 0.797]} & \textbf{0.925 [0.924, 0.926]}\\
+% $S_{\text{Neigh}}$     & USPS  & 0.980 [0.979, 0.980]              & 0.795 [0.793, 0.796]          & 0.897 [0.333, 0.333]\\ 
+% $S_{\text{Neigh}30}$   & USPS  & \textbf{0.980 [0.980, 0.981]}     & 0.792	[0.790, 0.796]          & 0.911 [0.911, 0.913]\\ 
+% %\midrule
+% \midrule
+% \end{tabular}
+% }
+% \caption{Accuracy of sampled models: median and 95\% confidence intervals. On the main diagonal are in-distribution experiments, otherwise out-of-distribution from source to target. Bold numbers highlight the best source-to-target results. A * denotes cases, in which the boot-strapped CI on the median could not be computed. We report the 95\% CI on the mean instead.}
+% \label{tab:accuracy_digits}
+% \end{minipage}
+% \vspace{-.2in}
+% \end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \begin{table}[t]
+% \begin{minipage}[t]{0.98\textwidth}
+% \centering
+% {\small
+% \begin{tabular}{l|l|cc}
+% \toprule
+% \multicolumn{4}{c}{\texttt{Natural Image Classification - Accuracies}}  \\
+% \midrule
+% & Source & \multicolumn{2}{c}{\texttt{Target}}  \\
+% \midrule
+%             & & CIFAR-10 & STL-10 \\
+% \midrule
+% $B_T$       &           &        0.490 [0.489, 0.490]            &         0.390 [0.389, 0.391] \\ 
+% \midrule
+% $B_F$       & CIFAR-10  &        0.486 [0.489, 0.487]            & \textbf{0.428 [0.425, 0.429]} \\ 
+% $S_{\text{Distr}}$     & CIFAR-10  &        0.483 [0.481, 0.484]            &         0.407 [0.403, 0.409] 	 \\ 
+% $S_{\text{Distr}30}$   & CIFAR-10  & \textbf{0.487 [0.484, 0.488]}          &         0.413 [0.409, 0.415] \\ 
+% $S_{\text{Neigh}}$     & CIFAR-10  &        0.456 [0.449, 0.460]            &         0.367 [0.358, 0.374] \\ 
+% $S_{\text{Neigh}30}$   & CIFAR-10  &        0.111 [0.111, 0.111]            &         0.379 [0.373, 0.382] \\ 
+% %\midrule
+% \midrule
+% % $B_T$       & STL-10    & 0.111 [0.111, 0.111] & 0.222 [0.222, 0.222] \\ 
+% %\midrule
+% $B_F$       & STL-10    & 0.111 [0.111, 0.111] & 0.222 [0.222, 0.222] \\ 
+% $S_{\text{Distr}}$     & STL-10    & 0.111 [0.111, 0.111] & 0.222 [0.222, 0.222] \\ 
+% $S_{\text{Distr}30}$   & STL-10    & 0.111 [0.111, 0.111] & 0.222 [0.222, 0.222] \\ 
+% $S_{\text{Neigh}}$     & STL-10    & 0.111 [0.111, 0.111] & 0.222 [0.222, 0.222] \\ 
+% $S_{\text{Neigh}30}$   & STL-10    & 0.111 [0.111, 0.111] & 0.222 [0.222, 0.222] \\ 
+% \midrule
+% \end{tabular}
+% }
+% \caption{Accuracy of sampled models: median and 95\% confidence intervals. }
+% \label{tab:accuracy_natural_images}
+% \end{minipage}
+% \vspace{-.2in}
+% \end{table}
